@@ -1,0 +1,18 @@
+schema_version: "0.1.0"
+health:
+  path: /
+  expect_status: 200
+smoke:
+  - name: 首頁載入
+    steps:
+      - action: http_request
+        params: { method: GET, path: / }
+    expect: { status: 200 }
+    idempotency: true
+user_acceptance:
+  - task: 以 NUXT_SITE_TOKEN 登入儀表板，建立一條指向任意網頁的短鏈
+    success_looks_like: 儀表板連結清單出現該短鏈
+  - task: 在無痕視窗開啟短鏈網址
+    success_looks_like: 轉址到目標網頁；稍後儀表板點擊數增加
+uninstall_check:
+  resource_zero_diff: true

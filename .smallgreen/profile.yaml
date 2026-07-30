@@ -1,0 +1,46 @@
+# Sink 適配契約（Path C）。上游程式碼不在本 repo——CI 依 upstream 鎖定 commit 組裝後受檢。
+schema_version: "0.1.0"
+profile: small-app
+summary:
+  purpose: 自己帳號裡的短網址服務，附點擊統計儀表板
+  audience: 個人與小團隊
+  users_estimate: 1-10
+upstream:
+  repo: miantiao-me/Sink
+  commit: 3f8d30ae8c917f269249d6c7c1c3894fc8d8af91
+  license: AGPL-3.0
+login_method: token
+data:
+  types: [short_links, click_analytics]
+  stored_in: [d1, kv, r2]
+secrets:
+  - name: NUXT_SITE_TOKEN
+    purpose: 管理介面登入 token；未設定時每次部署隨機產生，等於管理端鎖死
+    required: true
+    how_to_obtain: 自行產生 32 字元以上亂數，部署後 wrangler secret put NUXT_SITE_TOKEN
+    free_tier: true
+  - name: NUXT_CF_ACCOUNT_ID
+    purpose: 儀表板統計查詢用帳號 id；未設時統計顯示空白，短鏈功能不受影響
+    required: false
+    how_to_obtain: Cloudflare dashboard 首頁右側 Account ID
+    free_tier: true
+  - name: NUXT_CF_API_TOKEN
+    purpose: 儀表板統計查詢 token（Analytics Engine 讀取）
+    required: false
+    how_to_obtain: dashboard → My Profile → API Tokens → Create Token（Account Analytics Read 權限）
+    free_tier: true
+  - name: NUXT_API_CORS
+    purpose: 是否開放 API 跨域（要在別的網站呼叫 API 時設 true）
+    required: false
+    how_to_obtain: 環境變數設 NUXT_API_CORS=true
+    free_tier: true
+external_services:
+  - domain: api.cloudflare.com
+    purpose: 儀表板統計——查詢自己帳號的 Analytics Engine SQL API；僅在設定 NUXT_CF_API_TOKEN 時發生
+    data_sent: 統計 SQL 查詢與自己帳號的 API token；不含訪客個資
+  - domain: (user-directed)
+    purpose: 建立短鏈時抓取目標網頁中繼資料／預覽——目標域名由使用者輸入的網址決定，不可枚舉（spec issue：external_services 需 user-directed 類別）
+    data_sent: 對目標網址的 GET 請求，不附帶本服務任何憑證
+  - domain: (user-configured)
+    purpose: 選配 webhook 通知（webhookUrl）與 Safe Browsing DoH 檢查（safeBrowsingDoh），皆預設關閉、目標由部署者自行設定
+    data_sent: webhook 事件 payload／待檢查網址的 DNS 查詢

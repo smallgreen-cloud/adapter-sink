@@ -1,0 +1,35 @@
+schema_version: "0.1.0"
+update:
+  strategy: upstream-pr
+  upstream_check: gh api repos/miantiao-me/Sink/commits/master --jq .sha（與 UPSTREAM.md 鎖定值比對）
+  preview_before_promote: true
+backup:
+  targets: [d1, kv]
+  method: npx wrangler d1 export sink --remote --output sink-backup.sql；KV 依上游 docs 匯出（上游另有每日自動備份 cron）
+  frequency_hint: 大量建鏈後或更新前
+restore:
+  method: npx wrangler d1 execute sink --remote --file sink-backup.sql；程式碼回復＝git revert 後重新部署
+  d1_time_travel_note: 免費層 Time Travel 保留天數有限，勿當唯一備份
+uninstall:
+  steps:
+    - npx wrangler delete（移除 sink Worker）
+    - npx wrangler d1 delete sink
+    - npx wrangler kv namespace delete --namespace-id <部署時建立的 id>
+    - npx wrangler r2 bucket delete sink
+    - 刪除自己帳號下的 repo 副本
+  data_export_first: true
+quota_watchdog:
+  watch:
+    - resource: workers_requests
+      free_limit: 100,000 requests/day
+      check_method: dashboard → Workers → sink → metrics
+    - resource: analytics_engine_writes
+      free_limit: 100,000 data points/day
+      check_method: dashboard → Workers → Analytics Engine
+      alert_threshold: "80%"
+    - resource: d1_rows_read
+      free_limit: 5M rows/day
+      check_method: dashboard → D1 → sink → metrics
+    - resource: workers_ai_neurons
+      free_limit: 10,000 Neurons/day（選配 AI slug 建議功能才消耗）
+      check_method: dashboard → AI → Workers AI
