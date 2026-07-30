@@ -1,5 +1,5 @@
 # Sink 適配契約（Path C）。上游程式碼不在本 repo——CI 依 upstream 鎖定 commit 組裝後受檢。
-schema_version: "0.1.0"
+schema_version: "0.2.0"
 profile: small-app
 summary:
   purpose: 自己帳號裡的短網址服務，附點擊統計儀表板
@@ -34,13 +34,20 @@ secrets:
     required: false
     how_to_obtain: 環境變數設 NUXT_API_CORS=true
     free_tier: true
+resource_usage:
+  - resource: workers_ai
+    required: false
+    feature: AI slug 建議（不啟用僅少自動命名，短鏈核心不受影響）
 external_services:
   - domain: api.cloudflare.com
+    kind: fixed
     purpose: 儀表板統計——查詢自己帳號的 Analytics Engine SQL API；僅在設定 NUXT_CF_API_TOKEN 時發生
     data_sent: 統計 SQL 查詢與自己帳號的 API token；不含訪客個資
   - domain: (user-directed)
+    kind: user-directed
     purpose: 建立短鏈時抓取目標網頁中繼資料／預覽——目標域名由使用者輸入的網址決定，不可枚舉（spec issue：external_services 需 user-directed 類別）
     data_sent: 對目標網址的 GET 請求，不附帶本服務任何憑證
   - domain: (user-configured)
+    kind: user-configured
     purpose: 選配 webhook 通知（webhookUrl）與 Safe Browsing DoH 檢查（safeBrowsingDoh），皆預設關閉、目標由部署者自行設定
     data_sent: webhook 事件 payload／待檢查網址的 DNS 查詢
