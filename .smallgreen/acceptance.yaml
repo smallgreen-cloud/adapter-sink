@@ -10,9 +10,13 @@ smoke:
     expect: { status: 200 }
     idempotency: true
 user_acceptance:
-  - task: 以 NUXT_SITE_TOKEN 登入儀表板，建立一條指向任意網頁的短鏈
-    success_looks_like: 儀表板連結清單出現該短鏈
+  - task: POST /api/link/migration/run（帶 site token）完成初始化——fresh install 未跑會全站 423
+    success_looks_like: 回應 completed true
+  - task: 以 NUXT_SITE_TOKEN 建立一條指向任意網頁的短鏈（API 或儀表板）
+    success_looks_like: 回應含 shortLink；儀表板連結清單出現該短鏈
   - task: 在無痕視窗開啟短鏈網址
-    success_looks_like: 轉址到目標網頁；稍後儀表板點擊數增加
+    success_looks_like: 301/302 轉址到目標網頁
+  - task: 未帶 token 建鏈被拒
+    success_looks_like: HTTP 401
 uninstall_check:
   resource_zero_diff: true
