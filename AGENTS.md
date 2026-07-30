@@ -15,7 +15,7 @@
    git checkout 3f8d30ae8c917f269249d6c7c1c3894fc8d8af91   # 與 UPSTREAM.md 一致
    corepack enable && pnpm install
    ```
-3. **本地驗證**：`pnpm dev` 起本地站，開 http://localhost:3000 確認首頁。
+3. **本地驗證**：`pnpm dev` 起本地站，開 http://localhost:7465 確認首頁（上游 dev script 固定 port 7465；agent 矩陣 run 3 修正）。
 4. **建資源＋部署**（確認 2）：
    ```bash
    npx wrangler d1 create sink            # 記下 database_id
