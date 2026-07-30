@@ -12,8 +12,8 @@ restore:
   d1_time_travel_note: 免費層 Time Travel 保留天數有限，勿當唯一備份
 uninstall:
   steps:
-    - npx wrangler delete（移除 sink Worker）
-    - npx wrangler d1 delete sink
+    - npx wrangler delete --name sink --force（移除 Worker）
+    - 刪 D1：npx wrangler d1 delete sink（互動確認）；非互動環境已知靜默失敗（2026-07-30 沙盒實測），改 REST DELETE /accounts/:id/d1/database/:uuid
     - npx wrangler kv namespace delete --namespace-id <部署時建立的 id>
     - npx wrangler r2 bucket delete sink
     - 刪除自己帳號下的 repo 副本
