@@ -30,7 +30,7 @@
    pnpm build && pnpm deploy:worker       # deploy:config 讀 .env 產 wrangler.deploy.jsonc → migrations → deploy
    ```
    注意：Analytics Engine 需帳號先在 dashboard 一次性啟用（未啟用會 error 10089）；新帳號 workers.dev 子網域可 `PUT /accounts/:id/workers/subdomain` 註冊，TLS 佈建約 3-5 分鐘。
-5. **設 secret**：產生 32+ 字元亂數後 `npx wrangler secret put NUXT_SITE_TOKEN --config wrangler.deploy.jsonc`；統計儀表板要 `NUXT_CF_ACCOUNT_ID`／`NUXT_CF_API_TOKEN`（選配，見 profile.yaml how_to_obtain）。
+5. **設 secret**：產生 32+ 字元亂數後 `npx wrangler secret put NUXT_SITE_TOKEN --config wrangler.deploy.jsonc`（此檔由步驟 4 的 `pnpm deploy:worker` 內部產生；若單獨執行本步驟需先跑 `pnpm deploy:config`——矩陣 run 12 回饋）；統計儀表板要 `NUXT_CF_ACCOUNT_ID`／`NUXT_CF_API_TOKEN`（選配，見 profile.yaml how_to_obtain）。部署後的網址為 `https://sink.<你的子網域>.workers.dev`，子網域可查 `GET /accounts/:id/workers/subdomain`。
 6. **初始化**：fresh install 也要先解 423 gate——`curl -X POST <部署URL>/api/link/migration/run -H "Authorization: Bearer <NUXT_SITE_TOKEN>"`，回 `{"completed":true,...}` 即可。
 7. **驗收**（確認 3）：照 `.smallgreen/acceptance.yaml`——登入、建短鏈、開短鏈看轉址、未授權被拒。全過才算完成。
 
